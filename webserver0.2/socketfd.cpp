@@ -17,8 +17,6 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
     {
         sock = new sockfd() ;
         sock->fd = socket( AF_INET, SOCK_STREAM, 0) ;
-        //struct linger tmp = { 1, 0 };                                                                                                                                                
-        //setsockopt( sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
 
         cout << sock->fd <<endl ;
         
