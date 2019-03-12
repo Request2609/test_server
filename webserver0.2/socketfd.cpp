@@ -17,6 +17,8 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
     {
         sock = new sockfd() ;
         sock->fd = socket( AF_INET, SOCK_STREAM, 0) ;
+        struct linger tmp = { 0, 1};                                                                                                                                                
+        setsockopt( sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
 
         cout << sock->fd <<endl ;
         
@@ -31,10 +33,9 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
         ( sock->serv ).sin_port = htons( atoi(port) ) ;
         ( sock->serv ).sin_addr.s_addr = inet_addr( ip );
         memset(sock->serv.sin_zero,'\0',8);
+
         int flag = 0 ;
         int ret = setsockopt( sock->fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag) ) ;
-
-
         if( ret < 0 )
         {
             free(sock) ;
