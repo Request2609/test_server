@@ -17,11 +17,6 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
     {
         sock = new sockfd() ;
         sock->fd = socket( AF_INET, SOCK_STREAM, 0) ;
-        struct linger tmp = { 0, 1};                                                                                                                                                
-        setsockopt( sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
-
-        cout << sock->fd <<endl ;
-        
         if( sock->fd < 0 )
         {
             free(sock) ;
@@ -29,28 +24,32 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
             exit( 1 ) ;
         }
         
+        struct linger tmp ;
+        tmp.l_onoff = 0;  
+        tmp.l_linger = 0 ;
+        setsockopt( sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
+
         ( sock->serv ).sin_family = AF_INET ; 
         ( sock->serv ).sin_port = htons( atoi(port) ) ;
         ( sock->serv ).sin_addr.s_addr = inet_addr( ip );
         memset(sock->serv.sin_zero,'\0',8);
 
-        int flag = 0 ;
-        int ret = setsockopt( sock->fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag) ) ;
-        if( ret < 0 )
-        {
-            free(sock) ;
-            cout << "build socketopt error!" << endl ;
-            exit( 1 ) ;
-        }
     }
     return sock ;
 }
 
 void sockfd :: s_bind()
 {
-    int ret = bind( sock->fd, ( struct sockaddr* )&serv, sizeof( serv ) ) ;
-    cout<<serv.sin_family<<endl ;
-    cout<<serv.sin_addr.s_addr<<endl ;
+    //这块一定得设置为1,才有效
+    int flag = 1 ;
+    int ret = setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag) ) ;
+    if( ret < 0 )
+    {
+        free(sock) ;
+        cout << "build socketopt error!" << endl ;
+        exit( 1 ) ;
+    }
+    ret = bind( sock->fd, ( struct sockaddr* )&serv, sizeof( serv ) ) ;
 
     if( ret < 0 )
     {   

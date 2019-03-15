@@ -3,6 +3,7 @@
 #include<dirent.h>
 
 #define MAX 1024
+#define BUFFER_SIZE 4096
 
 int  get_line( int& sock , char* line ,int& len)
 {
@@ -14,7 +15,7 @@ int  get_line( int& sock , char* line ,int& len)
     while( (i < len - 1)&&(c != '\n'))
     {
 
-        n = recv(sock, &c, 1, 0) ;
+        n = recv(sock, &c, 1, MSG_DONTWAIT) ;
         
         if( n == 0 )
         {
@@ -25,7 +26,7 @@ int  get_line( int& sock , char* line ,int& len)
         {
             if( c == '\r' )
             {   
-                    n = recv( sock , &c , 1 , MSG_PEEK ) ;
+                    n = recv( sock , &c , 1 , MSG_PEEK) ;
                     if( n > 0 && c == '\n')
                     {
                         recv(sock , &c , 1 , 0);
@@ -75,8 +76,6 @@ string get_info( string oldStr )
     idx2 = passlen + idx1 -1 ;
     string password = oldStr.substr( idx1, idx2 ) ;
     password = password.substr(1,password.find("&")-1) ;
-    cout<<name<<endl ;
-    cout<<password<<endl;
     return name +"&"+ password ;
 }
 
@@ -107,17 +106,17 @@ void http_post( const char* request, int connfd, string info )
     char *file = _path+1 ;
     string a = _path ;
     char tmp[MAX] ;
-    if(a.find( "register" ) != string::npos){
+    if(a.find( "register" ) != string::npos)
+    {
         //将套接字传给CGI进程
         sprintf( tmp ,"%s,%d",info.c_str(),connfd );
         //切换进程
-    pid_t pid ;
-    if((pid=fork()) ==0 ){
+        pid_t pid ;
+        if((pid=fork()) ==0 ){
 
-        //dup2( connfd, STDOUT_FILENO ) ;
-        execl( file, tmp, NULL ) ;
-    }
-    wait(NULL) ;
+            execl( file, tmp, NULL ) ;
+        }
+        wait(NULL) ;
     }
 }
 
@@ -134,6 +133,7 @@ void http_request(const char* buf ,int connfd )
     decode_str( _path, _path ) ;
     //主要是path
     char* file = _path + 1 ;
+
     //初始时,要是没有特殊请求,返回客户端着1.html文件
     if( strcmp(_path , "/") == 0)
     {
@@ -308,7 +308,7 @@ void send_error( int connfd )
     return ;
 
 }
-
+//发送普通文件
 void send_file(const char* file , int connfd)
 {
         int fd = open( file , O_RDONLY ) ;
@@ -318,10 +318,9 @@ void send_file(const char* file , int connfd)
             return  ;
         }
 
-        char buf[4096] ;
-        //char buf1[4104];
+        char buf[BUFFER_SIZE] ;
         int len = 0 ;
-        while( (len = read(fd ,buf ,sizeof(buf))) > 0 )
+        while((len = read(fd , buf, sizeof(buf))) > 0)
         {
            send( connfd , buf ,len , 0) ;
         }
@@ -333,6 +332,7 @@ void send_file(const char* file , int connfd)
         }
 }  
 
+//设置非阻塞
 int  setnonblocking( int fd )
 {
     int old_ = fcntl( fd, F_GETFL ) ;

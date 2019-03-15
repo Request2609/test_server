@@ -43,53 +43,60 @@ int epoll_add( int epfd, int fd )
 int run_epoll( epollfd ep, int servfd)
 {   
     while(1){
-    struct epoll_event all[N] ;
-    int ret = epoll_wait( ep.epfd, all, N,-1) ;
     
-    if(ret < 0)
-    {
-        cout << "epoll_wait ret < 0" << endl;
-        return -1 ;
-    }
+        struct epoll_event all[N] ;
     
-    for( int i = 0; i < ret; i++ )
-    {
-        
-        int fd =all[i].data.fd ;
-        
-        //活跃事件加入到事件列表
-        if( fd == servfd )
+        int ret = epoll_wait( ep.epfd, all, N,-1) ;
+    
+    
+        if(ret < 0)
+    
         {
-            struct sockaddr_in cli ;
-            socklen_t len = sizeof(cli) ;
-            fd = accept( fd, ( struct sockaddr* )&cli, &len) ;
-            if( fd < 0 )
-            {
-                cout<<"create fd error!" <<endl ;
-                return -1 ;
-            }
-            int ret = epoll_add( ep.epfd, fd ) ;
-            if(ret == -1 )
-            {
-                return -1 ;
-            }
+            cout << "epoll_wait ret < 0" << endl;
+            return -1 ;
         }
-
-        //可读事件
-        else if( all[i].events&EPOLLIN ){
     
-            tasks* tk = new tasks( fd ) ;   
-            tk->epfd = ep.epfd ;
-            pool.append( tk ) ;
-        }
-
-        else
+        for( int i = 0; i < ret; i++ )
         {
-            continue ;
-        }
+        
+            int fd =all[i].data.fd ;
+        
+            //活跃事件加入到事件列表
+            if( fd == servfd )
+            {
+                struct sockaddr_in cli ;
+                socklen_t len = sizeof(cli) ;
+                fd = accept( fd, ( struct sockaddr* )&cli, &len) ;
+                if( fd < 0 )
+                {
+                    cout<<"create fd error!" <<endl ;
+                    return -1 ;
+                }
+                int ret = epoll_add( ep.epfd, fd ) ;
+                if(ret == -1 )
+                {
+                    cout  << "uuuuuuuuuuuuuuuuuu" << endl ;
+                    return -1 ;
+                }
+            }
 
+            //可读事件
+            else if( all[i].events&EPOLLIN ){
+    
+                tasks* tk = new tasks( fd ) ;   
+                tk->epfd = ep.epfd ;
+                pool.append( tk ) ;
+            }
+
+            else
+            {
+                cout << "oooooooooooooooo" << endl ;
+                continue ;
+            }
+        }
     }
-    }
+
+    cout << "hhhhhhhhhhhhhhhhhh" << endl ;
     return 1 ;
 }
 
