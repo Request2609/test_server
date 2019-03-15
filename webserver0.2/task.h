@@ -90,6 +90,10 @@ void  tasks ::get_request(string str1)
 //将套接字从epoll树上处理掉
 void tasks :: del_fd()
 {
+    struct linger tmp ;
+    tmp.l_onoff = 0;  
+    tmp.l_linger = 0 ;
+    setsockopt( connfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
     int ret = epoll_ctl(epfd, EPOLL_CTL_DEL, connfd, NULL ) ;
     if( ret < 0 )
     {

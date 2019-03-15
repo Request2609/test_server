@@ -24,10 +24,6 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
             exit( 1 ) ;
         }
         
-        struct linger tmp ;
-        tmp.l_onoff = 0;  
-        tmp.l_linger = 0 ;
-        setsockopt( sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
 
         ( sock->serv ).sin_family = AF_INET ; 
         ( sock->serv ).sin_port = htons( atoi(port) ) ;
