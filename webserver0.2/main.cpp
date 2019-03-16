@@ -26,6 +26,10 @@ void sig_handle( int signo )
 //将套接字添加到epoll树中
 int epoll_add( int epfd, int fd )
 {
+    struct linger tmp ;
+    tmp.l_onoff = 0;  
+    tmp.l_linger = 0 ;
+    setsockopt(fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
     setnonblocking( fd ) ;
     struct epoll_event ev ;
     ev.events = EPOLLIN|EPOLLET ;
@@ -75,7 +79,6 @@ int run_epoll( epollfd ep, int servfd)
                 int ret = epoll_add( ep.epfd, fd ) ;
                 if(ret == -1 )
                 {
-                    cout  << "uuuuuuuuuuuuuuuuuu" << endl ;
                     return -1 ;
                 }
             }
@@ -90,13 +93,11 @@ int run_epoll( epollfd ep, int servfd)
 
             else
             {
-                cout << "oooooooooooooooo" << endl ;
                 continue ;
             }
         }
     }
 
-    cout << "hhhhhhhhhhhhhhhhhh" << endl ;
     return 1 ;
 }
 
