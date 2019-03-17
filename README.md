@@ -23,4 +23,5 @@ make
 ### 版本说明
 
 该版本是基于epoll+线程池实现的高并发稳定版服务器
+<a href="https://blog.csdn.net/qq_41681241/article/details/88584729">设计实现</a>
     
