@@ -90,6 +90,7 @@ void  tasks ::get_request(string str1)
 //将套接字从epoll树上处理掉
 void tasks :: del_fd()
 {
+    /*
     int ret = epoll_ctl(epfd, EPOLL_CTL_DEL, connfd, NULL ) ;
     if( ret < 0 )
     {
@@ -98,6 +99,7 @@ void tasks :: del_fd()
         exit(1) ;
     }
     close( connfd ) ;
+    */
 }
 
 //获取用户信息

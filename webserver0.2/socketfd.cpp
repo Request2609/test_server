@@ -24,11 +24,11 @@ sockfd* sockfd :: getsockfd( const char* ip, const char* port )
             exit( 1 ) ;
         }
         
-/*        struct linger tmp ;
+        struct linger tmp ;
         tmp.l_onoff = 0;  
         tmp.l_linger = 0 ;
         setsockopt(sock->fd, SOL_SOCKET, SO_LINGER, &tmp, sizeof( tmp ) );
-*/
+
         ( sock->serv ).sin_family = AF_INET ; 
         ( sock->serv ).sin_port = htons( atoi(port) ) ;
         ( sock->serv ).sin_addr.s_addr = inet_addr( ip );
@@ -43,6 +43,7 @@ void sockfd :: s_bind()
     //这块一定得设置为1,才有效
     int flag = 1 ;
     int ret = setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag) ) ;
+
     if( ret < 0 )
     {
         free(sock) ;

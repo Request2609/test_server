@@ -5,58 +5,6 @@
 #define MAX 1024
 #define BUFFER_SIZE 4096
 
-int  get_line( int& sock , char* line ,int& len)
-{
-    
-    int i = 0 ;
-    char c = '\0' ;
-    int n  ;
-
-    while( (i < len - 1)&&(c != '\n'))
-    {
-
-        n = recv(sock, &c, 1, MSG_DONTWAIT) ;
-        
-        if( n == 0 )
-        {
-            break ;
-        }
-        
-        else if( n > 0 )
-        {
-            if( c == '\r' )
-            {   
-                    n = recv( sock , &c , 1 , MSG_PEEK) ;
-                    if( n > 0 && c == '\n')
-                    {
-                        recv(sock , &c , 1 , 0);
-                    }
-
-                    else
-                    {
-                        c = '\n' ;
-                    }
-            }
-
-            line[i] = c ;
-            i++ ;
-        }
-
-        else
-        {
-            return -1 ;
-        }
-    }
-
-    line[i] = '\0' ;
-    
-    if( n == -1 )
-    {
-        i = -1 ;
-    }
-    return i ;  
-}
-
 string get_info( string oldStr )
 {
      
@@ -133,7 +81,7 @@ void http_request(const char* buf ,int connfd )
     decode_str( _path, _path ) ;
     //主要是path
     char* file = _path + 1 ;
-
+    cout <<_path << endl ;
     //初始时,要是没有特殊请求,返回客户端着1.html文件
     if( strcmp(_path , "/") == 0)
     {
@@ -160,10 +108,11 @@ void http_request(const char* buf ,int connfd )
             send_error(connfd) ;
             return ;
         }
-        
+
         if( S_ISDIR( st.st_mode ) )
         {
             char bb[6] = ".html" ;
+
             send_response_head( connfd , 200 , "OK" , get_file_type( bb ) , 4096 );
             send_dir( connfd, file ) ;   
         }
@@ -184,17 +133,19 @@ void send_dir(int connfd ,const char* dirname)
     char buf1[1024];
     bzero( buf1, sizeof(buf1)) ;
     bzero( buf, sizeof(buf)) ;
-
+    
     char buf2[400] ="<div style=\"position:absolute;z-index:-1;width:100%;height:100%;\">";
     strcat(buf2, "<img src=\"back1.jpg\" width=\"100%\" height=\"100%\"/></div>") ;
     sprintf(buf, "<html><head><title>%s</title></head>\r\n","Music-Center");
-
+    
     sprintf( buf+strlen(buf), "%s", buf2 ) ;
     struct dirent **ptr ; 
     //将目录名全放在数组中
+    cout << buf <<endl ;
     int num = scandir(dirname,&ptr,NULL,alphasort);
     char path[1024];
     int flag = 1 ;
+    
     for( int i = 0 ;i<num ;i++)
     {
             char *name = ptr[i]->d_name ;
@@ -209,7 +160,7 @@ void send_dir(int connfd ,const char* dirname)
             sprintf(path,"%s/%s",dirname,name);
             struct stat st ;
             stat(path,&st);
-           
+           cout << "*********"<<path <<endl ;
             //将文件路径解码,并发送到浏览器
             encode_str(buf1,sizeof(buf1),path);
             //如果是文件

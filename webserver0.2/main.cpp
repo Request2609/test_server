@@ -14,13 +14,18 @@ typedef void (*sighandler_t)(int) ;
 
 void sig_handle( int signo )
 {
-    if( signo == SIGINT )
+    if( signo == SIGINT)
     {
         pool.~ThreadPool();
         delete serv_sock ;  
         exit(0) ;
     }
 
+    if(signo == SIGPIPE)
+    {
+        cout << "=======" << endl ;
+        return ;
+    }
 }
 
 //将套接字添加到epoll树中
@@ -115,12 +120,13 @@ int main(int argc, char** argv)
     serv_sock->s_bind() ;
     serv_sock->s_listen() ;
 
-    sighandler_t ret ;
+    sighandler_t ret, ret_pipe ;
     setnonblocking(serv_sock->fd) ;
     epollfd ep ;
     ep.epollfd_create_handle( serv_sock->fd ) ;
     ret = signal( SIGINT, sig_handle ) ;
-    
+    ret_pipe = signal(SIGPIPE, sig_handle) ;
+
     run_epoll( ep, serv_sock->fd) ;
     delete serv_sock ;
 }
